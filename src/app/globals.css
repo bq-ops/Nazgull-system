@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* ─── Design tokens ───────────────────────────────────────────────────────── */
+@theme {
+  /* Brand palette */
+  --color-brand-oxblood:      #4A1416;
+  --color-brand-oxblood-deep: #2E0A0A;
+  --color-brand-rose:         #C98B92;
+  --color-bg:                 #FBF1F0;
+  --color-blush:              #F4DAD9;
+  --color-surface:            #FFFFFF;
+  --color-border:             #ECCFCD;
+  --color-text:               #2B1A1B;
+  --color-text-muted:         #8A6E6F;
+  --color-success:            #4E7C59;
+  --color-warning:            #B5792B;
+  --color-danger:             #B23A48;
+
+  /* Typography — CSS vars injected by next/font at runtime */
+  --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-body:    var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
+
+  /* Border-radius scale (8 – 12 px) */
+  --radius-card: 8px;
+  --radius-lg:   12px;
+}
+
+/* ─── Canonical raw CSS vars (for one-off inline usage) ──────────────────── */
+@layer base {
+  :root {
+    --brand-oxblood:      #4A1416;
+    --brand-oxblood-deep: #2E0A0A;
+    --brand-rose:         #C98B92;
+    --bg:                 #FBF1F0;
+    --blush:              #F4DAD9;
+    --surface:            #FFFFFF;
+    --border:             #ECCFCD;
+    --text:               #2B1A1B;
+    --text-muted:         #8A6E6F;
+    --success:            #4E7C59;
+    --warning:            #B5792B;
+    --danger:             #B23A48;
+  }
+
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    /* tabular numerals for inventory / financial figures */
+    font-feature-settings: "tnum";
+    -webkit-font-smoothing: antialiased;
+  }
+}
