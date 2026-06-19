@@ -6,12 +6,18 @@ import { usePathname } from "next/navigation";
 
 // ─── nav config ─────────────────────────────────────────────────────────────
 
-const NAV = [
+const NAV_MAIN = [
   { label: "Dashboard", href: "/" },
-  { label: "Products", href: "/products" },
+  { label: "Products",  href: "/products" },
   { label: "Purchases", href: "/purchases" },
-  { label: "Sales", href: "/sales" },
-  { label: "Expenses", href: "/expenses" },
+  { label: "Sales",     href: "/sales" },
+  { label: "Customers", href: "/customers" },
+  { label: "Expenses",  href: "/expenses" },
+  { label: "Reports",   href: "/reports" },
+] as const;
+
+const NAV_BOTTOM = [
+  { label: "Settings", href: "/settings" },
 ] as const;
 
 function isActive(href: string, pathname: string) {
@@ -30,6 +36,33 @@ function Logo() {
   );
 }
 
+function NavLink({
+  href,
+  label,
+  pathname,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  pathname: string;
+  onNavigate?: () => void;
+}) {
+  const active = isActive(href, pathname);
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={`flex items-center rounded-card px-3 py-2 text-sm transition-colors ${
+        active
+          ? "bg-blush font-medium text-brand-oxblood"
+          : "text-text-muted hover:bg-blush/50 hover:text-text"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
 function NavLinks({
   pathname,
   onNavigate,
@@ -38,24 +71,17 @@ function NavLinks({
   onNavigate?: () => void;
 }) {
   return (
-    <nav className="flex-1 space-y-0.5 px-3 py-2">
-      {NAV.map(({ label, href }) => {
-        const active = isActive(href, pathname);
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            className={`flex items-center rounded-card px-3 py-2 text-sm transition-colors ${
-              active
-                ? "bg-blush font-medium text-brand-oxblood"
-                : "text-text-muted hover:bg-blush/50 hover:text-text"
-            }`}
-          >
-            {label}
-          </Link>
-        );
-      })}
+    <nav className="flex flex-col justify-between flex-1 px-3 py-2">
+      <div className="space-y-0.5">
+        {NAV_MAIN.map(({ label, href }) => (
+          <NavLink key={href} href={href} label={label} pathname={pathname} onNavigate={onNavigate} />
+        ))}
+      </div>
+      <div className="space-y-0.5 border-t border-border pt-2">
+        {NAV_BOTTOM.map(({ label, href }) => (
+          <NavLink key={href} href={href} label={label} pathname={pathname} onNavigate={onNavigate} />
+        ))}
+      </div>
     </nav>
   );
 }

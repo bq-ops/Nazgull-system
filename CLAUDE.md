@@ -50,3 +50,27 @@ numbers — use tabular numerals).
 Aesthetic: elegant boutique. Generous whitespace, rounded corners 8–12px,
 hairline borders, blush page background, white cards, oxblood primary buttons.
 Lists are stacked cards on mobile, tables on desktop.
+
+## Loyalty (points + referral)
+
+Customers identified by phone number (social/COD selling, no logins).
+
+Tables:
+
+- customers: id, phone (unique), name, city, created_at, total_orders,
+  total_spent, points_balance, referral_code (unique), referred_by, referral_rewarded
+- points_transactions: id, customer_id, type (earn|redeem|referral_bonus|adjust),
+  points (+/-), sale_id, note, created_at (balance = sum of points)
+  Sales additions: customer_id, status (pending|completed|returned),
+  points_earned, points_redeemed, discount_amount, referral_code_used
+  Settings (one editable row): earn_rate, redeem_value, referrer_bonus,
+  new_customer_discount_pct
+
+Rules:
+
+- Points/referral bonuses awarded only when sale.status = completed; returned orders reverse them.
+- Earn: points_earned = floor(order_total \* earn_rate), on completion.
+- Redeem: discount = points_redeemed \* redeem_value, capped at order total;
+  cannot redeem more than balance; record a redeem transaction.
+- Referral: new customer enters a code on first order -> referred_by set + new_customer_discount_pct off;
+  when that first order completes, referrer gets referrer_bonus points once (guard with referral_rewarded).

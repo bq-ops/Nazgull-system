@@ -1,19 +1,40 @@
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
+import type { Expense, LoyaltySettings } from "@/types/database";
+import ExpensesClient from "./ExpensesClient";
 
 export const metadata: Metadata = { title: "Expenses" };
 
-export default function ExpensesPage() {
+const DEFAULT_SETTINGS: LoyaltySettings = {
+  id: 1,
+  earn_rate: 0.1,
+  redeem_value: 0.01,
+  referrer_bonus: 100,
+  new_customer_discount_pct: 10,
+  base_currency: "IQD",
+  usd_iqd_rate: 1310,
+  display_currency: "IQD",
+  default_bundle_price: 0,
+  monthly_ad_budget: 0,
+};
+
+export default async function ExpensesPage() {
+  const supabase = await createClient();
+
+  const [{ data }, { data: settingsRow }] = await Promise.all([
+    supabase
+      .from("expenses")
+      .select("*")
+      .order("date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(200),
+    supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
+  ]);
+
   return (
-    <div className="p-6 md:p-8">
-      <h1 className="font-display text-2xl font-bold text-brand-oxblood">
-        Expenses
-      </h1>
-      <p className="mt-1 text-sm text-text-muted">
-        Track operating expenses to calculate net profit.
-      </p>
-      <div className="mt-6 flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-surface">
-        <p className="text-sm text-text-muted">Expense log coming soon</p>
-      </div>
-    </div>
+    <ExpensesClient
+      initialExpenses={(data as Expense[]) ?? []}
+      settings={(settingsRow as LoyaltySettings) ?? DEFAULT_SETTINGS}
+    />
   );
 }

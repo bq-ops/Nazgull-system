@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Product } from "@/types/database";
+import type { LoyaltySettings, Product } from "@/types/database";
 import ProductForm from "./ProductForm";
+import { formatMoney, type Currency } from "@/lib/currency";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 
@@ -16,17 +17,11 @@ function margin(price: number, cost: number): string {
   return (((price - cost) / price) * 100).toFixed(1) + "%";
 }
 
-function fmt(n: number): string {
-  return n.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
 // ─── mobile card ────────────────────────────────────────────────────────────
 
 function ProductCard({
   product,
+  fmt,
   onEdit,
   onDelete,
   confirming,
@@ -35,6 +30,7 @@ function ProductCard({
   onCancelDelete,
 }: {
   product: Product;
+  fmt: (n: number) => string;
   onEdit: () => void;
   onDelete: () => void;
   confirming: boolean;
@@ -130,9 +126,10 @@ function ProductCard({
 
 interface Props {
   initialProducts: Product[];
+  settings: LoyaltySettings;
 }
 
-export default function ProductsClient({ initialProducts }: Props) {
+export default function ProductsClient({ initialProducts, settings }: Props) {
   const [products, setProducts] = useState(initialProducts);
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -141,6 +138,13 @@ export default function ProductsClient({ initialProducts }: Props) {
 
   const supabase = useMemo(() => createClient(), []);
   const lowCount = products.filter(isLow).length;
+
+  const baseCurrency = settings.base_currency as Currency;
+  const dispCurrency = settings.display_currency as Currency;
+  const rate = settings.usd_iqd_rate;
+  function fmt(n: number) {
+    return formatMoney(n, dispCurrency, baseCurrency, rate);
+  }
 
   function openAdd() {
     setEditingProduct(null);
@@ -218,6 +222,7 @@ export default function ProductsClient({ initialProducts }: Props) {
                 <ProductCard
                   key={p.id}
                   product={p}
+                  fmt={fmt}
                   onEdit={() => openEdit(p)}
                   onDelete={() => setConfirmDeleteId(p.id)}
                   confirming={confirmDeleteId === p.id}
@@ -342,6 +347,7 @@ export default function ProductsClient({ initialProducts }: Props) {
       {formOpen && (
         <ProductForm
           product={editingProduct}
+          settings={settings}
           onSaved={handleSaved}
           onClose={closeForm}
         />

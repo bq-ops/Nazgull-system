@@ -1,8 +1,9 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import type { LoyaltySettings, Product } from "@/types/database";
-import ProductsClient from "./ProductsClient";
+import type { Customer, LoyaltySettings } from "@/types/database";
+import CustomersClient from "./CustomersClient";
 
-export const metadata = { title: "Products — Nazgull" };
+export const metadata: Metadata = { title: "Customers" };
 
 const DEFAULT_SETTINGS: LoyaltySettings = {
   id: 1,
@@ -17,17 +18,20 @@ const DEFAULT_SETTINGS: LoyaltySettings = {
   monthly_ad_budget: 0,
 };
 
-export default async function ProductsPage() {
+export default async function CustomersPage() {
   const supabase = await createClient();
 
-  const [{ data: products }, { data: settingsRow }] = await Promise.all([
-    supabase.from("products").select("*").order("name"),
+  const [{ data: customers }, { data: settingsRow }] = await Promise.all([
+    supabase
+      .from("customers")
+      .select("*")
+      .order("created_at", { ascending: false }),
     supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
   ]);
 
   return (
-    <ProductsClient
-      initialProducts={(products as Product[]) ?? []}
+    <CustomersClient
+      initialCustomers={(customers as Customer[]) ?? []}
       settings={(settingsRow as LoyaltySettings) ?? DEFAULT_SETTINGS}
     />
   );

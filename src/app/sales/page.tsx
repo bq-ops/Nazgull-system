@@ -1,19 +1,48 @@
 import type { Metadata } from "next";
+import { createClient } from "@/lib/supabase/server";
+import type { LoyaltySettings, Product, SaleWithDetails } from "@/types/database";
+import SalesClient from "./SalesClient";
 
 export const metadata: Metadata = { title: "Sales" };
 
-export default function SalesPage() {
+const DEFAULT_SETTINGS: LoyaltySettings = {
+  id: 1,
+  earn_rate: 0.1,
+  redeem_value: 0.01,
+  referrer_bonus: 100,
+  new_customer_discount_pct: 10,
+  base_currency: "IQD",
+  usd_iqd_rate: 1310,
+  display_currency: "IQD",
+  default_bundle_price: 0,
+  monthly_ad_budget: 0,
+};
+
+export default async function SalesPage() {
+  const supabase = await createClient();
+
+  const [{ data: products }, { data: sales }, { data: settingsRow }] =
+    await Promise.all([
+      supabase.from("products").select("id, name, sku, selling_price, avg_cost").order("name"),
+      supabase
+        .from("sales")
+        .select(`
+          id, date, city, channel, status, points_earned, points_redeemed,
+          discount_amount, referral_code_used, customer_id, created_at,
+          customers(name, phone),
+          sale_items(id, product_id, quantity, unit_price, cost_at_sale, line_type, bundle_components, products(name, sku))
+        `)
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(100),
+      supabase.from("settings").select("*").eq("id", 1).maybeSingle(),
+    ]);
+
   return (
-    <div className="p-6 md:p-8">
-      <h1 className="font-display text-2xl font-bold text-brand-oxblood">
-        Sales
-      </h1>
-      <p className="mt-1 text-sm text-text-muted">
-        Log sales by customer and city, track revenue and COGS.
-      </p>
-      <div className="mt-6 flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-surface">
-        <p className="text-sm text-text-muted">Sales log coming soon</p>
-      </div>
-    </div>
+    <SalesClient
+      initialProducts={(products as Product[]) ?? []}
+      initialHistory={(sales as unknown as SaleWithDetails[]) ?? []}
+      settings={(settingsRow as LoyaltySettings) ?? DEFAULT_SETTINGS}
+    />
   );
 }

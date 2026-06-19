@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Product } from "@/types/database";
+import type { LoyaltySettings, Product } from "@/types/database";
+import CurrencyInput from "@/components/CurrencyInput";
+import type { Currency } from "@/lib/currency";
 
 type FormData = {
   name: string;
@@ -38,6 +40,7 @@ function toForm(p: Product): FormData {
 
 interface Props {
   product: Product | null;
+  settings: LoyaltySettings;
   onSaved: (product: Product) => void;
   onClose: () => void;
 }
@@ -96,12 +99,14 @@ function fakeProduct(): FormData {
   };
 }
 
-export default function ProductForm({ product, onSaved, onClose }: Props) {
+export default function ProductForm({ product, settings, onSaved, onClose }: Props) {
   const [form, setForm] = useState<FormData>(product ? toForm(product) : EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClient();
+  const baseCurrency = settings.base_currency as Currency;
+  const rate = settings.usd_iqd_rate;
 
   function set(field: keyof FormData) {
     return (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -219,29 +224,27 @@ export default function ProductForm({ product, onSaved, onClose }: Props) {
               <label className="block text-sm font-medium text-text">
                 Selling price <span className="text-danger">*</span>
               </label>
-              <input
+              <CurrencyInput
                 required
-                type="number"
                 min="0"
-                step="0.01"
+                placeholder="0"
                 value={form.selling_price}
-                onChange={set("selling_price")}
-                placeholder="0.00"
-                className={inputCls}
+                onChange={(base) => setForm((prev) => ({ ...prev, selling_price: base }))}
+                baseCurrency={baseCurrency}
+                defaultRate={rate}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-text">
                 Avg cost
               </label>
-              <input
-                type="number"
+              <CurrencyInput
                 min="0"
-                step="0.01"
+                placeholder="0"
                 value={form.avg_cost}
-                onChange={set("avg_cost")}
-                placeholder="0.00"
-                className={inputCls}
+                onChange={(base) => setForm((prev) => ({ ...prev, avg_cost: base }))}
+                baseCurrency={baseCurrency}
+                defaultRate={rate}
               />
             </div>
           </div>
