@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 // ─── nav config ─────────────────────────────────────────────────────────────
 
@@ -63,6 +64,26 @@ function NavLink({
   );
 }
 
+function SignOutButton({ onNavigate }: { onNavigate?: () => void }) {
+  const router = useRouter();
+
+  async function handleSignOut() {
+    onNavigate?.();
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
+
+  return (
+    <button
+      onClick={handleSignOut}
+      className="flex w-full items-center rounded-card px-3 py-2 text-sm text-text-muted transition-colors hover:bg-blush/50 hover:text-text"
+    >
+      Sign out
+    </button>
+  );
+}
+
 function NavLinks({
   pathname,
   onNavigate,
@@ -81,6 +102,7 @@ function NavLinks({
         {NAV_BOTTOM.map(({ label, href }) => (
           <NavLink key={href} href={href} label={label} pathname={pathname} onNavigate={onNavigate} />
         ))}
+        <SignOutButton onNavigate={onNavigate} />
       </div>
     </nav>
   );
