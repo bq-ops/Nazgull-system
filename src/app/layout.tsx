@@ -16,8 +16,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Nazgull", template: "%s — Nazgull" },
-  description: "Sales and inventory dashboard for a small online boutique",
+  title: { default: "NAZGULL", template: "%s — NAZGULL" },
+  description: "Sales, inventory, and profit dashboard for NAZGULL boutique.",
 };
 
 export default function RootLayout({
